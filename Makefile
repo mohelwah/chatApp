@@ -1,15 +1,14 @@
 install:
-	pip install --upgrade pip &&\
+	python.exe -m pip install --upgrade pip &&\
 		pip install -r requirements.txt
 
 test:
 	python -m pytest -vv test_hello.py
 
 format:
-	black *.py
-
+	black app/
 
 lint:
-	pylint --disable=R,C *.py
+	pylint --disable=R,C app/
 
 all: install format lint test

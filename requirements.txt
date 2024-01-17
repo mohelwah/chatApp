@@ -3,3 +3,9 @@ black
 pytest
 pytest-cov
 click
+fastapi
+sqlalchemy
+langchain
+uvicorn
+openai
+psycopg2
