@@ -11,8 +11,8 @@ from langchain.prompts.chat import ChatPromptTemplate
 from typing import List, Optional, Union
 from ..schemas import History
 from langchain.prompts import PromptTemplate
-from server.utils import get_prompt_template
-from server.memory.conversation_db_buffer_memory import ConversationBufferDBMemory
+from ..utils import get_prompt_template
+from ..memory.conversation_db_buffer_memory import ConversationBufferDBMemory
 from ..db.repository import add_message_to_db
 from ..callback_handler.conversation_callback_handler import (
     ConversationCallbackHandler,

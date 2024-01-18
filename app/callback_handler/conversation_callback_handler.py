@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Union, Optional
 
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import LLMResult
-from server.db.repository import update_message
+from ..db.repository import update_message
 
 
 class ConversationCallbackHandler(BaseCallbackHandler):
