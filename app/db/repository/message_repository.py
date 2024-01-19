@@ -7,7 +7,7 @@ from ..models.message_model import MessageModel
 @with_session
 def add_message_to_db(
     session,
-    converation_id: str,
+    conversation_id: str,
     chat_type,
     query,
     response="",
@@ -20,12 +20,12 @@ def add_message_to_db(
 
     if not message_id:
         message_id = uuid.uuid4().hex
-    if not converation_id:
-        converation_id = uuid.uuid4().hex
+    if not conversation_id:
+        conversation_id = uuid.uuid4().hex
     m = MessageModel(
         id=message_id,
         chat_type=chat_type,
-        converation_id=converation_id,
+        conversation_id=conversation_id,
         query=query,
         response=response,
         meta_data=meta_data,

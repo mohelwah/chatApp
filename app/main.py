@@ -5,24 +5,13 @@ from .db.repository.message_repository import add_message_to_db
 import pydantic
 from pydantic import BaseModel
 from typing import Any
+from .utils import get_model_worker_config
+from .schemas import BaseResponse
+from .chat import chat_stream
 
 app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
-
-
-class BaseResponse(BaseModel):
-    code: int = pydantic.Field(200, description="API status code")
-    msg: str = pydantic.Field("success", description="API status message")
-    data: Any = pydantic.Field(None, description="API data")
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "code": 200,
-                "msg": "success",
-            }
-        }
 
 
 async def document():
@@ -30,6 +19,8 @@ async def document():
 
 
 app.get("/", response_model=BaseResponse, summary="swagger")(document)
+
+app.post("/chat", response_model=BaseResponse, summary="chat")(chat_stream)
 
 
 @app.post("/message")
@@ -45,3 +36,8 @@ def add_message():
     )
 
     return {"data": {message_id}}
+
+
+@app.post("/test")
+def test():
+    get_model_worker_config()

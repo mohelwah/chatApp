@@ -9,3 +9,5 @@ langchain
 uvicorn
 openai
 psycopg2
+python-dotenv
+jinja2
