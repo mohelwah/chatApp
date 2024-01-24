@@ -41,7 +41,7 @@ LLM_MODELS = ["gpt-3.5-turbo"]
 TEMPERATURE = 0
 
 PROMPT_TEMPLATES = {
-    "llm_chat": {
+    "LLM Conversation": {
         "default": "{{ input }}",
         "with_history": "The following is a friendly conversation between a human and an AI. "
         "The AI is talkative and provides lots of specific details from its context. "

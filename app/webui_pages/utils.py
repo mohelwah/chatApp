@@ -239,7 +239,7 @@ class ApiRequest:
             else:
                 return value_func(response)
 
-    def chat_chat(
+    def chat(
         self,
         query: str,
         conversation_id: str = None,
