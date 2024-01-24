@@ -1,5 +1,5 @@
 import sys
-from configs.model_config import LLM_DEVICE
+from .model_config import LLM_DEVICE
 
 DEFAULT_BIND_HOST = "0.0.0.0" if sys.platform != "win32" else "127.0.0.1"
 
@@ -19,7 +19,7 @@ FSCHAT_OPENAI_API = {
     "host": DEFAULT_BIND_HOST,
     "port": 20000,
 }
-
+HTTPX_DEFAULT_TIMEOUT = 300.0
 
 # fastchat model_worker server
 # 这些模型必须是在model_config.MODEL_PATH或ONLINE_MODEL中正确配置的。

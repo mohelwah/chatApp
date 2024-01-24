@@ -1,5 +1,6 @@
-from .configs import logger
+from .configs import logger, log_verbose
 from .configs import MODEL_PRIVIDER, ONLINE_LLM_MODEL
+from .configs.server_config import HTTPX_DEFAULT_TIMEOUT,API_SERVER
 import asyncio
 from typing import (
     Literal,
@@ -15,6 +16,8 @@ from typing import (
 )
 import logging
 from langchain_community.chat_models import ChatOpenAI
+import httpx
+import os
 
 
 def get_prompt_template(type: str = "llm_chat", name: str = "default") -> Optional[str]:
@@ -77,9 +80,8 @@ def get_model_worker_config(model_name: str = None) -> dict:
     """
 
     # from server import model_workers
-    print(MODEL_PRIVIDER)
+
     config = ONLINE_LLM_MODEL.get(MODEL_PRIVIDER)
-    print(config.get("model_name"))
 
     """
     config = FSCHAT_MODEL_WORKERS.get("default", {}).copy()
@@ -110,7 +112,7 @@ def get_model_worker_config(model_name: str = None) -> dict:
 
 
 def api_address() -> str:
-    from configs.server_config import API_SERVER
+    from .configs.server_config import API_SERVER
 
     host = API_SERVER["host"]
     if host == "0.0.0.0":
@@ -125,6 +127,33 @@ def webui_address() -> str:
     host = WEBUI_SERVER["host"]
     port = WEBUI_SERVER["port"]
     return f"http://{host}:{port}"
+
+
+def get_httpx_client(
+    use_async: bool = False,
+    proxies: Union[str, Dict] = None,
+    timeout: float = HTTPX_DEFAULT_TIMEOUT,
+    **kwargs,
+) -> Union[httpx.Client, httpx.AsyncClient]:
+    """
+    helper to get httpx client with default proxies that bypass local addesses.
+    """
+    default_proxies = {
+        # do not use proxy for locahost
+        "all://127.0.0.1": None,
+        "all://localhost": None,
+    }
+
+    # construct Client
+    kwargs.update(timeout=timeout, proxies=default_proxies)
+
+    if log_verbose:
+        logger.info(f"{get_httpx_client.__class__.__name__}:kwargs: {kwargs}")
+
+    if use_async:
+        return httpx.AsyncClient(**kwargs)
+    else:
+        return httpx.Client(**kwargs)
 
 
 if __name__ == "__main__":

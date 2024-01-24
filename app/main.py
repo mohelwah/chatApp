@@ -8,6 +8,7 @@ from typing import Any
 from .utils import get_model_worker_config
 from .schemas import BaseResponse
 from .chat import chat_stream
+from .webui_pages.utils import ApiRequest
 
 app = FastAPI()
 
@@ -40,4 +41,12 @@ def add_message():
 
 @app.post("/test")
 def test():
-    get_model_worker_config()
+    api_request = ApiRequest()
+    return {"Api request is done"}
+
+
+@app.post("/test_apiRequest")
+def test():
+    api_request = ApiRequest()
+    get_return = api_request.get("/test")
+    return {"Api request is done": get_return}

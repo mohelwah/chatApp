@@ -11,3 +11,6 @@ openai
 psycopg2
 python-dotenv
 jinja2
+streamlit_chatbox
+streamlit_modal
+streamlit_option_menu

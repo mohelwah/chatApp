@@ -1,3 +1,4 @@
+from .basic_config import OPENAI_API_KEY
 LLM_DEVICE = "auto"
 
 MODEL_PRIVIDER = "openai-api"
