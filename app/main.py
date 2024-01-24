@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from .db.base import engine, Base
+from app.db.utlis import create_tables, reset_tables
 from .db.repository.message_repository import add_message_to_db
 import pydantic
 from pydantic import BaseModel
@@ -12,7 +12,8 @@ from .webui_pages.utils import ApiRequest
 
 app = FastAPI()
 
-Base.metadata.create_all(bind=engine)
+reset_tables()
+create_tables()
 
 
 async def document():
@@ -49,4 +50,4 @@ def test():
 def test():
     api_request = ApiRequest()
     get_return = api_request.get("/test")
-    return {"Api request is done": get_return}
+    return {"Api request is done ": get_return}

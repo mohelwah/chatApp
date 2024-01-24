@@ -10,7 +10,7 @@ class MessageModel(Base):
 
     __tablename__ = "message"
     id = Column(String(32), primary_key=True, comment="ID")
-    converation_id = Column(
+    conversation_id = Column(
         String(32), default=None, index=True, comment="Conceration ID"
     )
     chat_type = Column(String(50), comment="Chat Type")

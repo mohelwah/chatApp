@@ -1,7 +1,7 @@
 from fastapi import Body
 from fastapi.responses import StreamingResponse
-from ..configs import LLM_MODELS, TEMPERATURE
-from ..utils import wrap_done, get_ChatOpenAI
+from app.configs import LLM_MODELS, TEMPERATURE
+from app.utils import wrap_done, get_ChatOpenAI, get_prompt_template
 from langchain.chains import LLMChain
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from typing import AsyncIterable
@@ -9,12 +9,12 @@ import asyncio
 import json
 from langchain.prompts.chat import ChatPromptTemplate
 from typing import List, Optional, Union
-from ..schemas import History
+from app.schemas import History
 from langchain.prompts import PromptTemplate
-from ..utils import get_prompt_template
-from ..memory.conversation_db_buffer_memory import ConversationBufferDBMemory
-from ..db.repository.message_repository import add_message_to_db
-from ..callback_handler.conversation_callback_handler import (
+
+from app.memory.conversation_db_buffer_memory import ConversationBufferDBMemory
+from app.db.repository.message_repository import add_message_to_db
+from app.callback_handler.conversation_callback_handler import (
     ConversationCallbackHandler,
 )
 
@@ -62,7 +62,7 @@ async def chat_stream(
             message_id = add_message_to_db(
                 chat_type="llm_chat", query=query, conversation_id=conversation_id
             )
-            print(f"vmessage_id {message_id}")
+            print(f"message_id {message_id}")
             # Responsible for saving llm response to message db
             conversation_callback = ConversationCallbackHandler(
                 conversation_id=conversation_id,
@@ -111,7 +111,7 @@ async def chat_stream(
             )
             chat_prompt = ChatPromptTemplate.from_messages([input_msg])
         
-        message_id =1
+        #message_id =1
         chain = LLMChain(prompt=chat_prompt, llm=model, memory=memory)
 
         # Begin a task that runs in the background.

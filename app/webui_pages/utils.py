@@ -1,17 +1,18 @@
 from typing import *
 from pathlib import Path
 
-# 此处导入的配置为发起请求（如WEBUI）机器上的配置，主要用于为前端设置默认值。分布式部署时可以与服务器上的不同
-from ..configs.server_config import (
+# The configuration imported here is the configuration on the machine that initiates the request (such as WEBUI), and is mainly used to set default values ​​for the front end. Distributed deployment can be different from that on the server
+
+from app.configs.server_config import (
     HTTPX_DEFAULT_TIMEOUT,
 )
-from ..configs import logger, log_verbose, LLM_MODELS,TEMPERATURE
+from app.configs import logger, log_verbose, LLM_MODELS, TEMPERATURE
 import httpx
 import contextlib
 import json
 import os
 from io import BytesIO
-from ..utils import api_address, get_httpx_client
+from app.utils import api_address, get_httpx_client
 
 from pprint import pprint
 
@@ -114,7 +115,7 @@ class ApiRequest:
         as_json: bool = False,
     ):
         """
-        将httpx.stream返回的GeneratorContextManager转化为普通生成器
+        Convert the GeneratorContextManager returned by httpx.stream into a normal generator
         """
 
         async def ret_async(response, as_json):
@@ -129,7 +130,7 @@ class ApiRequest:
                                 # pprint(data, depth=1)
                                 yield data
                             except Exception as e:
-                                msg = f"接口返回json错误： ‘{chunk}’。错误信息是：{e}。"
+                                msg = f"The interface returns json error: ‘{chunk}’. The error message is:{e}。"
                                 logger.error(
                                     f"{e.__class__.__name__}: {msg}",
                                     exc_info=e if log_verbose else None,
@@ -138,17 +139,15 @@ class ApiRequest:
                             # print(chunk, end="", flush=True)
                             yield chunk
             except httpx.ConnectError as e:
-                msg = f"无法连接API服务器，请确认 ‘api.py’ 已正常启动。({e})"
+                msg = f"Unable to connect to the API server, please confirm that 'api.py' has been started normally.({e})"
                 logger.error(msg)
                 yield {"code": 500, "msg": msg}
             except httpx.ReadTimeout as e:
-                msg = (
-                    f"API通信超时，请确认已启动FastChat与API服务（详见Wiki '5. 启动 API 服务或 Web UI'）。（{e}）"
-                )
+                msg = f"API communication timed out, please confirm that FastChat and API services have been started (see Wiki '5. Start API service or Web UI for details)'）。（{e}）"
                 logger.error(msg)
                 yield {"code": 500, "msg": msg}
             except Exception as e:
-                msg = f"API通信遇到错误：{e}"
+                msg = f"API communication encountered error: {e}"
                 logger.error(
                     f"{e.__class__.__name__}: {msg}",
                     exc_info=e if log_verbose else None,
@@ -167,7 +166,7 @@ class ApiRequest:
                                 # pprint(data, depth=1)
                                 yield data
                             except Exception as e:
-                                msg = f"接口返回json错误： ‘{chunk}’。错误信息是：{e}。"
+                                msg = f"The interface returns json error: '{chunk}'. The error message is:{e}。"
                                 logger.error(
                                     f"{e.__class__.__name__}: {msg}",
                                     exc_info=e if log_verbose else None,
@@ -176,17 +175,15 @@ class ApiRequest:
                             # print(chunk, end="", flush=True)
                             yield chunk
             except httpx.ConnectError as e:
-                msg = f"无法连接API服务器，请确认 ‘api.py’ 已正常启动。({e})"
+                msg = f"Unable to connect to the API server, please confirm that 'api.py' has been started normally.({e})"
                 logger.error(msg)
                 yield {"code": 500, "msg": msg}
             except httpx.ReadTimeout as e:
-                msg = (
-                    f"API通信超时，请确认已启动FastChat与API服务（详见Wiki '5. 启动 API 服务或 Web UI'）。（{e}）"
-                )
+                msg = f"API communication timed out, please confirm that FastChat and API services have been started (see Wiki '5. Start API service or Web UI for details)'）。（{e}）"
                 logger.error(msg)
                 yield {"code": 500, "msg": msg}
             except Exception as e:
-                msg = f"API通信遇到错误：{e}"
+                msg = f"API communication encountered error:{e}"
                 logger.error(
                     f"{e.__class__.__name__}: {msg}",
                     exc_info=e if log_verbose else None,
@@ -205,16 +202,16 @@ class ApiRequest:
         value_func: Callable = None,
     ):
         """
-        转换同步或异步请求返回的响应
-        `as_json`: 返回json
-        `value_func`: 用户可以自定义返回值，该函数接受response或json
+        Convert the response returned by a synchronous or asynchronous request
+        `as_json`: return json
+        `value_func`: Users can customize the return value. This function accepts response or json
         """
 
         def to_json(r):
             try:
                 return r.json()
             except Exception as e:
-                msg = "API未能返回正确的JSON。" + str(e)
+                msg = "API failed to return correct JSON." + str(e)
                 if log_verbose:
                     logger.error(
                         f"{e.__class__.__name__}: {msg}",
@@ -253,8 +250,20 @@ class ApiRequest:
         **kwargs,
     ):
         """
-        对应api.py/chat/chat接口
+
+        Corresponds to main.py/chat interface
         """
+        test_data = {
+            "query": query,
+            "conversation_id": conversation_id,
+            "history_len": history_len,
+            "history": history,
+            "stream": stream,
+            "model_name": model,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "prompt_name": prompt_name,
+        }
         data = {
             "query": query,
             "conversation_id": conversation_id,
@@ -270,7 +279,7 @@ class ApiRequest:
         # print(f"received input message:")
         # pprint(data)
 
-        response = self.post("/chat/chat", json=data, stream=True, **kwargs)
+        response = self.post("/chat", json=test_data, stream=True, **kwargs)
         return self._httpx_stream2generator(response, as_json=True)
 
 

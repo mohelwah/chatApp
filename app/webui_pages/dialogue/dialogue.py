@@ -1,22 +1,20 @@
 import streamlit as st
-from ..utils import *
+from app.webui_pages.utils import *
 from streamlit_chatbox import *
 from streamlit_modal import Modal
 from datetime import datetime
 import os
 import re
 import time
-from ...configs import LLM_MODELS, PROMPT_TEMPLATES
+from app.configs import LLM_MODELS, PROMPT_TEMPLATES
 
-from ...configs.model_config import HISTORY_LEN
+from app.configs.model_config import HISTORY_LEN
 
 # from server.knowledge_base.utils import LOADER_DICT
 import uuid
 from typing import List, Dict
 
-chat_box = ChatBox(
-    assistant_avatar=os.path.join("img", "chatchat_icon_blue_square_v2.png")
-)
+chat_box = ChatBox()
 
 
 def check_error_msg(data: Union[str, dict, list], key: str = "errorMsg") -> str:
@@ -29,6 +27,28 @@ def check_error_msg(data: Union[str, dict, list], key: str = "errorMsg") -> str:
         if "code" in data and data["code"] != 200:
             return data["msg"]
     return ""
+
+
+def get_messages_history(
+    history_len: int, content_in_expander: bool = False
+) -> List[Dict]:
+    """
+    Return message history.
+    content_in_expander controls whether to return the content in the expander element. Generally, it can be selected when exporting. It is not required for the history passed into LLM.
+    """
+
+    def filter(msg):
+        content = [
+            x for x in msg["elements"] if x._output_method in ["markdown", "text"]
+        ]
+        if not content_in_expander:
+            content = [x for x in content if not x._in_expander]
+        content = [x.content for x in content]
+
+        return {
+            "role": msg["role"],
+            "content": "\n\n".join(content),
+        }
 
 
 def parse_command(text: str, modal: Modal) -> bool:
@@ -88,7 +108,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
 
     if not chat_box.chat_inited:
         st.toast(
-            f"Welcome to  [`Chatchat`](https://github.com/chatchat-space/Chatchat) ! \n\n"
+            f"Welcome to  [`Chatapp`](https://github.com/chatchat-space/Chatapp) ! \n\n"
             f"The currently running model `{default_model}`, You can start asking questions."
         )
         chat_box.init_session()
@@ -124,10 +144,6 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
 
         dialogue_modes = [
             "LLM Conversation",
-            "Knowledge Base Q&A",
-            "File Conversation",
-            "Search Engine Q&A",
-            "Customized Agent Q&A",
         ]
         dialogue_mode = st.selectbox(
             "Please select conversation mode:",
@@ -149,6 +165,8 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
             return x
 
         llm_models = LLM_MODELS
+
+   
         llm_model = st.selectbox(
             "Select LLM model:",
             llm_models,
@@ -159,11 +177,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
         )
         """
         index_prompt = {
-            "LLM chat": "llm_chat",
-            "Customized Agent Q&A": "agent_chat",
-            "Search Engine Chat": "search_engine_chat",
-            "Knowledge Base Q&A": "knowledge_base_chat",
-            "File Chat": "knowledge_base_chat",
+            "llm_chat": "LLM chat",
         }
         prompt_templates_kb_list = list(
             PROMPT_TEMPLATES[index_prompt[dialogue_mode]].keys()
@@ -183,11 +197,13 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
             on_change=prompt_change,
             key="prompt_template_select",
         )
-        """
-        st.session_state.prompt_template_select = PROMPT_TEMPLATES["LLM Conversation"]
-        prompt_template_name = st.session_state.prompt_template_select
 
-        #temperature = st.slider("Temperature：", 0.0, 1.0, TEMPERATURE, 0.05)
+        prompt_template_name = st.session_state.prompt_template_select
+        """
+        prompt_template_name = PROMPT_TEMPLATES["llm_chat"]["default"]
+        #prompt_template_name = st.session_state.prompt_template_select
+
+        temperature = st.slider("Temperature：", 0.0, 1.0, TEMPERATURE, 0.05)
         history_len = st.number_input(
             "Number of historical dialogue rounds:", 0, 20, HISTORY_LEN
         )
@@ -198,24 +214,24 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
     chat_input_placeholder = "Please enter the conversation content and use Shift+Enter for line breaks. Enter /help to view custom commands "
 
     if prompt := st.chat_input(chat_input_placeholder, key="prompt"):
-        if parse_command(text=prompt, modal=modal):  # 用户输入自定义命令
+        if parse_command(text=prompt, modal=modal):
             st.rerun()
         else:
-            # history = get_messages_history(history_len)
+            history = get_messages_history(history_len)
             chat_box.user_say(prompt)
             if dialogue_mode == "LLM Conversation":
-                chat_box.ai_say("正在思考...")
+                chat_box.ai_say("Thinking...")
                 text = ""
                 message_id = ""
                 r = api.chat(
                     prompt,
-                    # history=history,
+                    history=history,
                     conversation_id=conversation_id,
                     model=llm_model,
                     prompt_name=prompt_template_name,
                     temperature=0,
                 )
-                """
+
                 for t in r:
                     if error_msg := check_error_msg(t):  # check whether error occured
                         st.error(error_msg)
@@ -223,13 +239,13 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
                     text += t.get("text", "")
                     chat_box.update_msg(text)
                     message_id = t.get("message_id", "")
-                """
+
                 metadata = {
                     "message_id": message_id,
                 }
                 chat_box.update_msg(
                     text, streaming=False, metadata=metadata
-                )  # 更新最终的字符串，去除光标
+                )  # Update the final string and remove the cursor
 
     if st.session_state.get("need_rerun"):
         st.session_state["need_rerun"] = False
@@ -240,17 +256,17 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
         cols = st.columns(2)
         export_btn = cols[0]
         if cols[1].button(
-            "清空对话",
+            "Clear conversation",
             use_container_width=True,
         ):
             chat_box.reset_history()
             st.rerun()
 
     export_btn.download_button(
-        "导出记录",
+        "Export records",
         "".join(chat_box.export2md()),
-        file_name=f"{now:%Y-%m-%d %H.%M}_对话记录.md",
+        file_name=f"{now:%Y-%m-%d %H.%M}_Conversation record.md",
         mime="text/markdown",
         use_container_width=True,
     )
-    st.write("Welcome in my world is now development")
+    #st.write("Welcome in my world is now development")

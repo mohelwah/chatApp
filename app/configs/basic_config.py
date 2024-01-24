@@ -38,10 +38,10 @@ ONLINE_LLM_MODEL = {
 }
 
 LLM_MODELS = ["gpt-3.5-turbo"]
-TEMPERATURE = 0
-
+TEMPERATURE = 0.0
+"""
 PROMPT_TEMPLATES = {
-    "LLM Conversation": {
+    "llm_chat": {
         "default": "{{ input }}",
         "with_history": "The following is a friendly conversation between a human and an AI. "
         "The AI is talkative and provides lots of specific details from its context. "
@@ -51,4 +51,20 @@ PROMPT_TEMPLATES = {
         "Human: {input}\n"
         "AI:",
     },
+}
+"""
+
+PROMPT_TEMPLATES = {
+    "llm_chat": {
+        "default": "{{ input }}",
+        "with_history": "The following is a friendly conversation between a human and an AI. "
+        "The AI is talkative and provides lots of specific details from its context. "
+        "If the AI does not know the answer to a question, it truthfully says it does not know.\n\n"
+        "Current conversation:\n"
+        "{history}\n"
+        "Human: {input}\n"
+        "AI:",
+        "py": "You are a smart code assistant, please write me simple py code. \n"
+        "{{ input }}",
+    }
 }

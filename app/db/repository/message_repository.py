@@ -39,7 +39,7 @@ def add_message_to_db(
 @with_session
 def get_message_by_id(session, message_id) -> MessageModel:
     """
-    查询聊天记录
+    Query the database
     """
     m = session.query(MessageModel).filter_by(id=message_id).first()
     return m
@@ -48,7 +48,7 @@ def get_message_by_id(session, message_id) -> MessageModel:
 @with_session
 def feedback_message_to_db(session, message_id, feedback_score, feedback_reason):
     """
-    反馈聊天记录
+    Feedback
     """
     m = session.query(MessageModel).filter_by(id=message_id).first()
     if m:
